@@ -8,8 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
 import com.wojciechkula.catchacat.databinding.FragmentFactsBinding
+import com.wojciechkula.catchacat.presentation.facts.list.FactItem
+import com.wojciechkula.catchacat.presentation.facts.list.FactsListAdapter
 import com.wojciechkula.catchacat.utils.NetworkConnection
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -22,6 +25,12 @@ class FactsFragment : Fragment() {
     @Inject
     lateinit var hasNetworkConnection: NetworkConnection
 
+    private val adapter by lazy {
+        FactsListAdapter { fact ->
+            Timber.d("Item with id: ${fact._id} clicked")
+        }
+    }
+
     private val viewModel: FactsViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,6 +42,7 @@ class FactsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.factsRecyclerView.adapter = adapter
         observeViewModel()
         observeNetworkConnection()
     }
@@ -51,7 +61,15 @@ class FactsFragment : Fragment() {
     private fun bindState(state: FactsViewState) {
         with(binding) {
             if (state.factList.isNotEmpty()) {
-                testLabel.text = "Facts fetched in number of: ${state.factList.size}"
+                val factsItem =
+                    state.factList.map { factModel ->
+                        FactItem(
+                            _id = factModel._id,
+                            text = factModel.text,
+                            updatedAt = factModel.updatedAt
+                        )
+                    }
+                adapter.submitList(factsItem)
             }
 
             if (state.factList.isEmpty() && state.hasNetworkConnection) {
@@ -76,7 +94,7 @@ class FactsFragment : Fragment() {
     }
 
     private fun onError(message: String) {
-        Snackbar.make(binding.testLabel, message, Snackbar.LENGTH_LONG)
+        Snackbar.make(binding.progressBar, message, Snackbar.LENGTH_LONG)
             .show()
     }
 }
