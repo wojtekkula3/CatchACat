@@ -4,29 +4,50 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wojciechkula.catchacat.data.entity.FactEntity
-import com.wojciechkula.catchacat.domain.interctor.GetFactsInteractor
+import com.hadilq.liveevent.LiveEvent
+import com.wojciechkula.catchacat.domain.interctor.GetFactsFromAPIInteractor
+import com.wojciechkula.catchacat.domain.interctor.GetFactsFromLocalDSInteractor
+import com.wojciechkula.catchacat.extension.newBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class FactsViewModel @Inject constructor(
-    private val getFactsInteractor: GetFactsInteractor
+    private val getFactsFromAPIInteractor: GetFactsFromAPIInteractor,
+    private val getFactsFromLocalDSInteractor: GetFactsFromLocalDSInteractor,
 ) : ViewModel() {
 
-    private var _listOfFacts = MutableLiveData<List<FactEntity>>()
-    val listOfFacts: LiveData<List<FactEntity>>
-        get() = _listOfFacts
+    private var _viewState = MutableLiveData<FactsViewState>()
+    val viewState: LiveData<FactsViewState>
+        get() = _viewState
+
+    private var _viewEvent = LiveEvent<FactsViewEvent>()
+    val viewEvent: LiveData<FactsViewEvent>
+        get() = _viewEvent
 
     init {
+        _viewState.value = FactsViewState()
         viewModelScope.launch {
-            val response = getFactsInteractor.invoke()
-            if (response.isSuccessful) {
-                _listOfFacts.value = getFactsInteractor.invoke().body()
+            val facts = getFactsFromLocalDSInteractor()
+            if (facts.isNotEmpty()) {
+                _viewState.value = viewState.newBuilder { copy(factList = facts) }
             } else {
-                Timber.e(response.errorBody().toString(), "Error while getting facts")
+                _viewEvent.postValue(FactsViewEvent.ShowNoLocalFactsError)
+            }
+        }
+    }
+
+    fun changeNetworkConnectionStatus(hasNetworkConnection: Boolean) {
+        _viewState.value = viewState.newBuilder { copy(hasNetworkConnection = hasNetworkConnection) }
+        if (hasNetworkConnection && _viewState.value?.factList?.isEmpty() == true) {
+            viewModelScope.launch {
+                val facts = getFactsFromAPIInteractor()
+                if (facts.isNotEmpty()) {
+                    _viewState.value = viewState.newBuilder { copy(factList = facts) }
+                } else {
+                    _viewEvent.postValue(FactsViewEvent.ShowErrorWhileGettingFacts)
+                }
             }
         }
     }

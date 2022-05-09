@@ -1,9 +1,9 @@
 package com.wojciechkula.catchacat.domain.repository
 
-import com.wojciechkula.catchacat.data.entity.FactEntity
-import retrofit2.Response
+import com.wojciechkula.catchacat.domain.model.FactModel
 
 interface FactRepository {
 
-    suspend fun fetchFacts(): Response<List<FactEntity>>
+    suspend fun fetchFacts(): List<FactModel>
+    suspend fun getLocalFacts(): List<FactModel>
 }
