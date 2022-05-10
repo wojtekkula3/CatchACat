@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.wojciechkula.catchacat.data.dao.FactDao
 import com.wojciechkula.catchacat.data.entity.FactEntity
 
 @Database(entities = [FactEntity::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class LocalDatabase : RoomDatabase() {
 
     abstract fun factsDao(): FactDao

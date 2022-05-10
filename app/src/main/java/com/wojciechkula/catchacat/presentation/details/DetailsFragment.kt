@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.wojciechkula.catchacat.databinding.FragmentDetailsBinding
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DetailsFragment : Fragment() {
 
@@ -33,7 +35,8 @@ class DetailsFragment : Fragment() {
     private fun initViews() {
         val factDetails = args.factData
         binding.factTextOutput.text = factDetails.text
-        binding.lastUpdateOutput.text = factDetails.updatedAt
+        val dateFormatter = SimpleDateFormat("dd-MM-yyyy hh:mm", Locale.getDefault())
+        binding.lastUpdateOutput.text = dateFormatter.format(factDetails.updatedAt)
 
         binding.backButton.setOnClickListener {
             findNavController().popBackStack()
