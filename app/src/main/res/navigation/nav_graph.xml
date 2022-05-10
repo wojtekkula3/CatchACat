@@ -9,5 +9,19 @@
         android:id="@+id/factsFragment"
         android:name="com.wojciechkula.catchacat.presentation.facts.FactsFragment"
         android:label="fragment_facts"
-        tools:layout="@layout/fragment_facts" />
+        tools:layout="@layout/fragment_facts">
+        <action
+            android:id="@+id/openDetails"
+            app:destination="@id/detailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.wojciechkula.catchacat.presentation.details.DetailsFragment"
+        android:label="fragment_details"
+        tools:layout="@layout/fragment_details">
+        <argument
+            android:name="factData"
+            app:argType="com.wojciechkula.catchacat.presentation.facts.list.FactItem" />
+    </fragment>
 </navigation>

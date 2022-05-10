@@ -6,13 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.wojciechkula.catchacat.databinding.FragmentFactsBinding
 import com.wojciechkula.catchacat.presentation.facts.list.FactItem
 import com.wojciechkula.catchacat.presentation.facts.list.FactsListAdapter
 import com.wojciechkula.catchacat.utils.NetworkConnection
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,7 +27,7 @@ class FactsFragment : Fragment() {
 
     private val adapter by lazy {
         FactsListAdapter { fact ->
-            Timber.d("Item with id: ${fact._id} clicked")
+            findNavController().navigate(FactsFragmentDirections.openDetails(fact))
         }
     }
 
