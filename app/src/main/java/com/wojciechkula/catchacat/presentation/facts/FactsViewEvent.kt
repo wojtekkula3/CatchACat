@@ -1,7 +1,8 @@
 package com.wojciechkula.catchacat.presentation.facts
 
 sealed class FactsViewEvent {
-    object ShowNoLocalFactsError : FactsViewEvent()
-    object ShowErrorWhileGettingFacts : FactsViewEvent()
-
+    object ObserveInternetConnection : FactsViewEvent()
+    object ShowConnectToInternetImage : FactsViewEvent()
+    object ShowConnectToInternetError : FactsViewEvent()
+    object ShowGettingOnlineFactsError : FactsViewEvent()
 }

@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 import java.util.*
 
 @Parcelize
-class FactItem(
+data class FactItem(
     val _id: String,
     val text: String,
     val updatedAt: Date,

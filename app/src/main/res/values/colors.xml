@@ -10,4 +10,5 @@
     <color name="orange_100">#E3CAA5</color>
     <color name="orange_500">#E49A2A</color>
     <color name="orange_700">#BF7200</color>
+    <color name="warning">#FF5252</color>
 </resources>

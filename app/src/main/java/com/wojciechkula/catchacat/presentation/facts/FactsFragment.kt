@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.wojciechkula.catchacat.R
 import com.wojciechkula.catchacat.databinding.FragmentFactsBinding
 import com.wojciechkula.catchacat.presentation.facts.list.FactItem
 import com.wojciechkula.catchacat.presentation.facts.list.FactsListAdapter
@@ -42,9 +43,17 @@ class FactsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.factsRecyclerView.adapter = adapter
+        initViews()
         observeViewModel()
-        observeNetworkConnection()
+    }
+
+    private fun initViews() {
+        with(binding) {
+            factsRecyclerView.adapter = adapter
+            loadNewFactsButton.setOnClickListener {
+                viewModel.loadNewFacts()
+            }
+        }
     }
 
     private fun observeViewModel() {
@@ -52,15 +61,10 @@ class FactsFragment : Fragment() {
         viewModel.viewEvent.observe(viewLifecycleOwner, ::handleEvents)
     }
 
-    private fun observeNetworkConnection() {
-        hasNetworkConnection.observe(viewLifecycleOwner) {
-            viewModel.changeNetworkConnectionStatus(it)
-        }
-    }
-
     private fun bindState(state: FactsViewState) {
         with(binding) {
             if (state.factList.isNotEmpty()) {
+                binding.loadNewFactsButton.visibility = View.VISIBLE
                 val factsItem =
                     state.factList.map { factModel ->
                         FactItem(
@@ -72,24 +76,35 @@ class FactsFragment : Fragment() {
                 adapter.submitList(factsItem)
             }
 
-            if (state.factList.isEmpty() && state.hasNetworkConnection) {
+            if (state.factList.isEmpty() && !state.hasNetworkConnection) {
                 progressBar.visibility = View.VISIBLE
             } else {
                 progressBar.visibility = View.GONE
             }
 
-            if (state.hasNetworkConnection) {
-                internetConnectionLayout.visibility = View.GONE
+            if (state.isLoading) {
+                progressBar.visibility = View.VISIBLE
             } else {
-                internetConnectionLayout.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
             }
         }
     }
 
     private fun handleEvents(event: FactsViewEvent) {
         when (event) {
-            FactsViewEvent.ShowNoLocalFactsError -> onError("Connect to the internet!")
-            FactsViewEvent.ShowErrorWhileGettingFacts -> onError("Error While getting API Facts :o")
+            FactsViewEvent.ObserveInternetConnection -> onObserveNetworkConnection()
+            FactsViewEvent.ShowConnectToInternetImage -> binding.noInternetLayout.visibility = View.VISIBLE
+            FactsViewEvent.ShowConnectToInternetError -> onError(getString(R.string.facts_connect_to_the_internet))
+            FactsViewEvent.ShowGettingOnlineFactsError -> onError(getString(R.string.facts_try_again_later))
+        }
+    }
+
+    private fun onObserveNetworkConnection() {
+        hasNetworkConnection.observeForever {
+            if (it) {
+                binding.noInternetLayout.visibility = View.GONE
+            }
+            viewModel.changeNetworkConnectionStatus(it)
         }
     }
 

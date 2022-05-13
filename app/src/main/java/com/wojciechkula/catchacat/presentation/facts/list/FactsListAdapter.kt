@@ -1,6 +1,5 @@
 package com.wojciechkula.catchacat.presentation.facts.list
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -25,7 +24,6 @@ class DiffCallback : DiffUtil.ItemCallback<FactItem>() {
         return oldItem._id == newItem._id
     }
 
-    @SuppressLint("DiffUtilEquals")
     override fun areContentsTheSame(oldItem: FactItem, newItem: FactItem): Boolean {
         return oldItem == newItem
     }

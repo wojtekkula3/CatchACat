@@ -10,6 +10,7 @@ import com.wojciechkula.catchacat.domain.interctor.GetFactsFromLocalDSInteractor
 import com.wojciechkula.catchacat.extension.newBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,21 +34,35 @@ class FactsViewModel @Inject constructor(
             if (facts.isNotEmpty()) {
                 _viewState.value = viewState.newBuilder { copy(factList = facts) }
             } else {
-                _viewEvent.postValue(FactsViewEvent.ShowNoLocalFactsError)
+                Timber.d("There is no facts yet in local database")
+                _viewEvent.value = FactsViewEvent.ShowConnectToInternetImage
             }
+            _viewEvent.value = FactsViewEvent.ObserveInternetConnection
         }
     }
 
     fun changeNetworkConnectionStatus(hasNetworkConnection: Boolean) {
         _viewState.value = viewState.newBuilder { copy(hasNetworkConnection = hasNetworkConnection) }
-        if (hasNetworkConnection && _viewState.value?.factList?.isEmpty() == true) {
-            viewModelScope.launch {
+        if (_viewState.value?.factList?.isEmpty() == true) {
+            loadNewFacts()
+        }
+    }
+
+    fun loadNewFacts() {
+        viewModelScope.launch {
+            if (_viewState.value?.hasNetworkConnection == true) {
+                _viewState.value = viewState.newBuilder { copy(isLoading = true) }
                 val facts = getFactsFromAPIInteractor()
                 if (facts.isNotEmpty()) {
                     _viewState.value = viewState.newBuilder { copy(factList = facts) }
                 } else {
-                    _viewEvent.postValue(FactsViewEvent.ShowErrorWhileGettingFacts)
+                    _viewEvent.postValue(FactsViewEvent.ShowGettingOnlineFactsError)
+                    Timber.e("Error occurred while getting facts from API")
                 }
+                _viewState.value = viewState.newBuilder { copy(isLoading = false) }
+            } else {
+                Timber.d("Cannot fetch new facts because of no internet connection")
+                _viewEvent.postValue(FactsViewEvent.ShowConnectToInternetError)
             }
         }
     }
