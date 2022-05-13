@@ -12,11 +12,4 @@ class FactMapper @Inject constructor() {
         createdAt = factEntity.createdAt,
         updatedAt = factEntity.updatedAt
     )
-
-    fun mapToEntity(factModel: FactModel) = FactEntity(
-        _id = factModel._id,
-        text = factModel.text,
-        createdAt = factModel.createdAt,
-        updatedAt = factModel.updatedAt
-    )
 }

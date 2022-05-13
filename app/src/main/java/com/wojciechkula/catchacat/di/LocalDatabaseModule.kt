@@ -21,7 +21,7 @@ class LocalDatabaseModule {
     }
 
     @Provides
-    fun procideFactDao(database: LocalDatabase) : FactDao {
+    fun provideFactDao(database: LocalDatabase): FactDao {
         return database.factsDao()
     }
 
